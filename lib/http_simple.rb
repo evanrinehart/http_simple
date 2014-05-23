@@ -4,6 +4,8 @@ require 'uri'
 
 module HTTPSimple
 
+  class Bug < StandardError; end
+
   class HTTPException < StandardError
     def initialize report=nil
       @report = report
@@ -24,6 +26,7 @@ module HTTPSimple
   class ServiceUnavailable < ResponseException; end
   class InternalServerError < ResponseException; end
   class BadGateway < ResponseException; end
+  class MethodNotAllowed < ResponseException; end
 
   def self.get uri_string, query:{}, headers:{}
     generic_http_exec :get, uri_string, query, nil, headers
@@ -33,9 +36,19 @@ module HTTPSimple
     generic_http_exec :head, uri_string, query, nil, headers
   end
 
-  def self.post uri_string, query:{}, body:{}, headers:{}
+  def self.delete uri_string, query:{}, headers:{}
+    generic_http_exec :delete, uri_string, query, nil, headers
+  end
+
+  def self.post uri_string, query:{}, body:'', headers:{}
     generic_http_exec :post, uri_string, query, body, headers
   end
+
+  def self.put uri_string, query:{}, body:'', headers:{}
+    generic_http_exec :put, uri_string, query, body, headers
+  end
+
+  private
 
   def self.generic_http_exec meth, uri_string, query, body, headers
     uri = assert_string_uri uri_string
@@ -45,17 +58,21 @@ module HTTPSimple
       case meth
         when :get then http.get(raw_uri, headers)
         when :head then http.head(raw_uri, headers)
+        when :delete then http.delete(raw_uri, headers)
         when :post then http.post(raw_uri, body, headers)
+        when :put then http.put(raw_uri, body, headers)
+        else raise Bug, "bad method #{meth.inspect}"
       end
     end
     assert_ok(response.code, {
+      :method => meth,
       :uri => uri_string,
       :request_body => body,
       :headers => headers,
       :status => "#{response.code} #{response.message}",
       :response_body => response.body
     })
-    response.body
+    response.body || ''
   end
 
   def self.assert_string_uri uri_string
@@ -79,6 +96,7 @@ module HTTPSimple
       when '401' then Unauthorized
       when '403' then Forbidden
       when '404' then NotFound
+      when '405' then MethodNotAllowed
       when '500' then InternalServerError
       when '502' then BadGateway
       when '503' then ServiceUnavailable

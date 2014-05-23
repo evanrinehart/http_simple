@@ -1,0 +1,1 @@
+ruby -Ilib tests/test.rb
