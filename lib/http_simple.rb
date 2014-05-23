@@ -117,15 +117,13 @@ module HTTPSimple
     end
   end
 
-  def self.encode_query params
-    URI.encode_www_form params
-  end
-
   def self.uri_query_to_s uri, query
     if query.empty?
       uri.to_s
+    elsif uri.query.nil?
+      "#{uri.to_s}?#{URI.encode_www_form query}"
     else
-      "#{uri.to_s}?#{encode_query query}"
+      "#{uri.to_s}&#{URI.encode_www_form query}"
     end
   end
 
