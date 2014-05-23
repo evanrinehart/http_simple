@@ -1,0 +1,40 @@
+HTTPSimple
+
+Intended to be a simple interface to http. This means excluding streaming,
+upgrades, authentication, persistent connections and other things needed
+more seldomly than a basic GET or POST.
+
+HTTPSimple::get uri:"http://example.com/"
+  ==> "<!doctype html><html..."
+
+HTTPSimple::post
+  uri: "http://example.com/",
+  body: '{"poke":true}',
+  headers: {'ContentType'=>'applicaton/json'}
+    ==> "<!doctype html><html..."
+
+HTTPSimple o- Network
+  get
+    uri        : URI
+    query={}   : String => String
+    headers={} : String => String
+    :: {HTTPException} String
+  post
+    uri        : URI
+    body=''    : String
+    query={}   : String => String
+    headers={} : String => String
+    :: {HTTPException} String
+
+Exceptions
+  HTTPException < StandardError
+  NetworkException < HTTPException
+  ResponseException < HTTPException
+    report : ResponseException -> Hash
+  NotFound < ResponseException
+  BadRequest < ResponseException
+  Forbidden < ResponseException
+  Unauthorized < ResponseException
+  ServiceUnavailable < ResponseException
+  InternalServerError < ResponseException
+  BadGateway < ResponseException
