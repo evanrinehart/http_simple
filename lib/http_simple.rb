@@ -110,7 +110,7 @@ module HTTPSimple
     begin
       yield
     rescue Timeout::Error, Errno::EINVAL, Errno::ECONNREFUSED,
-      Errno::ECONNRESET, Errno::EHOSTUNREACH, SocketError,
+      Errno::ECONNRESET, Errno::EHOSTUNREACH, Errno::ENETUNREACH, SocketError,
       EOFError, OpenSSL::SSL::SSLError => e
       report = {:uri => uri, :request_headers => headers, :request_body => body}
       raise NetworkException.new(report), e.inspect
