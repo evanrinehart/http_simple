@@ -33,5 +33,5 @@ string do
     headers: {'Content-Type' => 'application/json'}
 end
 not_found { HTTPSimple::get "http://example.com/foo/bar/baz" }
-network_error { HTTPSimple::get "http://asldkfnalskdfna.com/" }
+network_error { HTTPSimple::get "http://23423.4234283h.asldkfnalskdfna.com/" }
 

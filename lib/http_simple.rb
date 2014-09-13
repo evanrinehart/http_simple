@@ -64,7 +64,7 @@ module HTTPSimple
         else raise Bug, "bad method #{meth.inspect}"
       end
     end
-    assert_ok(response.code, {
+    assert_ok(response.code, response.body, {
       :method => meth,
       :uri => uri_string,
       :request_body => body,
@@ -89,7 +89,7 @@ module HTTPSimple
     uri
   end
 
-  def self.assert_ok code, error_report
+  def self.assert_ok code, body, error_report
     eclass = case code
       when /^2\d\d$/ then :none
       when '400' then BadRequest
@@ -103,7 +103,9 @@ module HTTPSimple
       else ResponseException
     end
 
-    raise eclass.new(error_report), code if eclass != :none
+    message = body.nil? || body.empty? ? code : body
+
+    raise eclass.new(error_report), message if eclass != :none
   end
 
   def self.rethrow_network_exceptions uri, headers:{}, body:{}
@@ -111,7 +113,7 @@ module HTTPSimple
       yield
     rescue Timeout::Error, Errno::EINVAL, Errno::ECONNREFUSED,
       Errno::ECONNRESET, Errno::EHOSTUNREACH, SocketError,
-      EOFError, OpenSSL::SSL::SSLError => e
+      EOFError, OpenSSL::SSL::SSLError, Errno::ENETUNREACH => e
       report = {:uri => uri, :request_headers => headers, :request_body => body}
       raise NetworkException.new(report), e.inspect
     end
